@@ -6,15 +6,25 @@
     # ! Site redirects to the most recent page (currently Dec 2022) if the page is invalid (like searching for January 2026).
     # ! Script checks whether or not the the file exists after parsing the data, inefficency.
 # * Notes:
-    # * 2018 is used as the starting year because that was when more constructed legaue data was being shared.
+    # * 2018 is used as the starting year because that was when more "Constructed" league data was being shared.
+    # *
+    #
     # * You could use <select id="decklistMonth"> to see which months are fetchable, in the future.
         # Same with <select id="decklistYear">
         # This would fix the limitation issue, at the cost of just one more request to the site.
+    # Not sure what "Card_Code" corresponds to in the .json files
 # * Libraries:
-    # bs4
-    # requests
+import bs4
+import requests
+import json
+import re
+import os
 
-import bs4, requests, json, re, os
+# * Change below to True to fetch 2016 & 2017
+get_pre_2018 = False
+
+years_to_fetch = []
+
 def request_wrapper(link:str):
     try:
         req = requests.get(link)
@@ -25,7 +35,13 @@ def request_wrapper(link:str):
         raise SystemExit(f"Request failed! Status: {req.status_code}")
     return req
 
-for years in ['2019', '2020', '2021', '2022']:
+
+if get_pre_2018:
+    years_to_fetch += ["2017", "2018"]
+
+years_to_fetch += ['2018','2019', '2020', '2021', '2022']
+
+for years in years_to_fetch:
     for months in range(1,13):
 
         mtgo_lists = request_wrapper(f"https://www.mtgo.com/en/mtgo/decklists/{years}/{months:02}")
