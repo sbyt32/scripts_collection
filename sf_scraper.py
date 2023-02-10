@@ -13,36 +13,40 @@
 #         ]
 # }
 
-import requests
 import re
 import json
 import os
 
 def send_request(url:str):
-  resp = requests.get(url)
-  
-  if not resp.ok:
-    pass
-  else:
-    return resp.json()
-  
+    resp = requests.get(url)
+    if not resp.ok:
+        pass
+    else:
+        return resp.json()
+
+
 bulk_data_link = send_request('https://api.scryfall.com/bulk-data')
 
 for bulk_data_info in bulk_data_link['data']:
-  if bulk_data_info['type'] == 'default_cards':
-    regex_pattern = re.compile(r'[0-9]{4}-[0-9]{2}-[0-9]{2}.*[0-9]{2}:[0-9]{2}:[0-9]{2}', re.IGNORECASE)
-    fetch_time = re.search(regex_pattern, bulk_data_info['updated_at'])
+    if bulk_data_info['type'] == 'default_cards':
+        regex_pattern = re.compile(r'[0-9]{4}-[0-9]{2}-[0-9]{2}.*[0-9]{2}:[0-9]{2}:[0-9]{2}', re.IGNORECASE)
+        fetch_time = regex_pattern.search(bulk_data_info['updated_at'])
 
-    if fetch_time:
-        
-        file_name = fetch_time.group()
-      
-        file_name = file_name.replace("T", "_")
-        file_name = file_name.replace(":","")
-        all_data = send_request(bulk_data_info['download_uri'])
-        
-        if not os.path.exists('data'):
-            os.mkdir('data')
-        
-        with open(f'data/{file_name}.json', 'w') as bulk_data_fp:
-            json.dump(all_data, bulk_data_fp)
+        if fetch_time:
+            file_name = fetch_time.group()
+
+            file_name = file_name.replace("T","_")
+            file_name = file_name.replace(":","")
+
+            all_data = send_request(bulk_data_info['download_uri'])
+
+            if os.path.ismount('/mnt/Scraped_Data'):
+                folder_path = '/mnt/Scraped_Data'
+            else:
+                folder_path = '' # Untested
+
+            if not os.path.exists(f'{folder_path}/data'):
+                os.mkdir(f'{folder_path}/data')
+
+            with open(f'{folder_path}/data/{file_name}.json', 'w') as bulk_data_fp:
+                json.dump(all_data, bulk_data_fp)
